@@ -5,16 +5,17 @@ pub const Stats = struct {
     accepted: u64 = 0,
     rejected: u64 = 0,
     total_hashes: u64 = 0,
-    start_ns: i128 = 0,
+    start: std.time.Instant,
 
     pub fn init() Stats {
-        return .{ .start_ns = std.time.nanoTimestamp() };
+        return .{ .start = std.time.Instant.now() catch unreachable };
     }
 
     pub fn hashrate(self: *const Stats) f64 {
-        const now = std.time.nanoTimestamp();
-        const elapsed_s = @as(f64, @floatFromInt(now - self.start_ns)) / 1e9;
-        if (elapsed_s <= 0) return 0;
+        const now = std.time.Instant.now() catch return 0;
+        const elapsed_ns = now.since(self.start);
+        if (elapsed_ns == 0) return 0;
+        const elapsed_s = @as(f64, @floatFromInt(elapsed_ns)) / 1e9;
         return @as(f64, @floatFromInt(self.total_hashes)) / elapsed_s;
     }
 
