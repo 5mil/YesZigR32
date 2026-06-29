@@ -1,5 +1,19 @@
 # YesZigR32 Changelog
 
+## [0.2.0] — 2026-06-28
+
+- Vendored yescrypt C core from LuckyPepeChain/luckypepe-chain src/crypto/yescrypt/
+  - ccore/yescrypt.c  (N=4096, r=32, pers="WaviBanana")
+  - ccore/sha256.c
+  - ccore/sha256.h
+  - ccore/sysendian.h
+  - ccore/insecure_memzero.c / .h
+- ccore/yescrypt.h: trimmed to mining ABI (yescrypt_hash only)
+- build.zig: updated to compile both yescrypt.c and sha256.c
+- src/job.zig: wired real yescrypt_hash; passwd=salt=header (PoW convention)
+- Added hashHeader smoke test: verifies non-zero output on zero input
+- DO NOT replace vendored core with openwall/yescrypt
+
 ## [0.1.0] — 2026-06-28
 
 - Initial project skeleton
@@ -12,7 +26,6 @@
 - src/stats.zig: hashrate + share counters
 
 ### Remaining
-- [ ] Vendor Openwall yescrypt optimized core into ccore/
 - [ ] Wire stratum client into main
 - [ ] Wire worker threads into main
 - [ ] VarDiff support
