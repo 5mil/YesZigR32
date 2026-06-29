@@ -1,7 +1,6 @@
 //! Job engine: nonce iteration and share target check.
 //! Calls yescrypt_hash from ccore/yescrypt.c (LuckyPepeChain vendored core).
 //! Signature: yescrypt_hash(passwd, passwdlen, salt, saltlen, buf, buflen) -> c_int
-//! For PoW we pass header as both passwd and salt (standard mining convention).
 const std = @import("std");
 
 const c = @cImport(@cInclude("yescrypt.h"));
@@ -25,7 +24,7 @@ pub fn hashHeader(header: *const [80]u8, out: *[32]u8) bool {
     return ret == 0;
 }
 
-/// Check if hash meets target (simple leading-zero byte check).
+/// Check if hash meets target (leading-zero byte check).
 pub fn meetsDifficulty(hash: *const [32]u8, diff_leading_zeros: u8) bool {
     var i: u8 = 0;
     while (i < diff_leading_zeros and i < 32) : (i += 1) {
@@ -45,13 +44,12 @@ test "meetsDifficulty non-zero fails" {
     try std.testing.expect(!meetsDifficulty(&hash, 1));
 }
 
-test "hashHeader returns true on zero header" {
+test "hashHeader returns true and non-zero output on zero header" {
     const header = [_]u8{0} ** 80;
     var out: [32]u8 = undefined;
     const ok = hashHeader(&header, &out);
     try std.testing.expect(ok);
-    // Hash must not be all-zero (real yescrypt output)
     var all_zero = true;
-    for (out) |b| { if (b != 0) { all_zero = false; break; } }
+    for (out) |byte| { if (byte != 0) { all_zero = false; break; } }
     try std.testing.expect(!all_zero);
 }

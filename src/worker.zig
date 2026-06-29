@@ -1,7 +1,6 @@
 //! Per-thread mining worker. Iterates nonces and calls job.hashHeader.
 const std = @import("std");
 const job = @import("job.zig");
-const stats = @import("stats.zig");
 
 pub const WorkerCtx = struct {
     thread_id: u32,
@@ -17,10 +16,10 @@ pub fn run(ctx: *WorkerCtx) void {
     var nonce = ctx.start_nonce;
     while (nonce <= ctx.end_nonce) : (nonce +%= 1) {
         var h = ctx.header;
-        // Write nonce into header bytes 76..80 (little-endian)
         std.mem.writeInt(u32, h[76..80], nonce, .little);
         var hash: [32]u8 = undefined;
-        job.hashHeader(&h, &hash);
+        // discard bool — failure only on OOM, not a valid share condition
+        _ = job.hashHeader(&h, &hash);
         ctx.hashes += 1;
         if (job.meetsDifficulty(&hash, ctx.diff_zeros)) {
             ctx.found = job.Share{
@@ -34,13 +33,13 @@ pub fn run(ctx: *WorkerCtx) void {
     }
 }
 
-test "worker nonce range" {
+test "worker runs one nonce" {
     var ctx = WorkerCtx{
         .thread_id = 0,
         .header = [_]u8{0} ** 80,
         .start_nonce = 0,
         .end_nonce = 0,
-        .diff_zeros = 32, // impossible to find
+        .diff_zeros = 32, // impossible
     };
     run(&ctx);
     try std.testing.expectEqual(@as(u64, 1), ctx.hashes);

@@ -11,7 +11,6 @@ pub const Stats = struct {
         return .{ .start_ns = std.time.nanoTimestamp() };
     }
 
-    /// Hashrate in H/s since init.
     pub fn hashrate(self: *const Stats) f64 {
         const now = std.time.nanoTimestamp();
         const elapsed_s = @as(f64, @floatFromInt(now - self.start_ns)) / 1e9;

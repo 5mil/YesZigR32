@@ -14,8 +14,6 @@ pub const Config = struct {
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-    _ = allocator;
 
     const cfg = Config{};
     std.debug.print("YesZigR32 starting — {s}:{d} user={s}\n", .{
@@ -25,6 +23,17 @@ pub fn main() !void {
     // TODO: spawn stratum client thread
     // TODO: spawn worker threads (cfg.threads)
     // TODO: stats display loop
+    _ = worker;
+    _ = stratum;
+    _ = stats;
+}
+
+test {
+    // pull in tests from all modules
+    _ = @import("job.zig");
+    _ = @import("worker.zig");
+    _ = @import("stratum.zig");
+    _ = @import("stats.zig");
 }
 
 test "config defaults" {
